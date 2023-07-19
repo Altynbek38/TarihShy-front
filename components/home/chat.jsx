@@ -1,5 +1,5 @@
 'use client'
-
+import { authOptions } from "@/lib/authOptions";
 import { throttle } from '@/lib/throttle'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { ChatLine, LoadingChatLine } from './chat-line'
@@ -9,15 +9,16 @@ import { AcademicCapIcon } from '@heroicons/react/24/outline'
 import axios from 'axios'
 import toast, { Toaster } from 'react-hot-toast'
 
+
 // default first message to display in UI (not necessary to define the prompt)
 export const initialMessages = [
   {
     role: 'assistant',
-    content: 'Hi! I am a Jeopardy expert. Fire away with trivia questions!',
+    content: 'Salem! Men sizge tarih joninde kez kelgen suraqqa jauap beremin',
   },
 ]
 
-const InputMessage = ({ input, setInput, sendMessage, loading }) => {
+const InputMessage = ({ input, setInput, sendMessage, loading, session, person }) => {
   const [isGeneratingQuestion, setIsGeneratingQuestion] = useState(false)
   const [question, setQuestion] = useState(null)
   const [questionError, setQuestionError] = useState(null)
@@ -80,9 +81,8 @@ const InputMessage = ({ input, setInput, sendMessage, loading }) => {
             className="m-0 w-full border-0 bg-transparent p-0 py-3 pl-4 pr-12 text-black"
             placeholder="Type a message..."
             value={input}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                sendMessage(input)
+            onKeyDown={(e) => {             if (e.key === 'Enter') {
+                sendMessage(input, session, person)
                 setInput('')
               }
             }}
@@ -98,7 +98,7 @@ const InputMessage = ({ input, setInput, sendMessage, loading }) => {
               "absolute right-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 transition-colors")}
             type="submit"
             onClick={() => {
-              sendMessage(input)
+              sendMessage(input, session, person)
               setInput('')
             }}
             disabled={shouldShowLoadingIcon}
@@ -117,74 +117,83 @@ const InputMessage = ({ input, setInput, sendMessage, loading }) => {
 }
 
 const useMessages = () => {
-  const [messages, setMessages] = useState(initialMessages)
+  const [messages, setMessages] = useState(initialMessages);
   const [isMessageStreaming, setIsMessageStreaming] = useState(false);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false); // Add loading state
   const [error, setError] = useState(null);
 
   // send message to API /api/chat endpoint
-  const sendMessage = async (newMessage) => {
-    setLoading(true)
-    setError(null)
+  const sendMessage = async (newMessage, session, person) => {
+    setLoading(true);
+    setError(null);
     const newMessages = [
       ...messages,
       { role: 'user', content: newMessage },
-    ]
-    setMessages(newMessages)
-    const last10messages = newMessages.slice(-10) // remember last 10 messages
-
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messages: last10messages,
-      }),
-    })
-
-    console.log('Edge function returned.')
-
-    if (!response.ok) {
-      console.log(response)
-      setError(response.statusText)
-      setLoading(false)
-      return
+    ];
+    setMessages(newMessages);
+  
+    try {
+      const payload = {
+        user_id: String(session.user.email), 
+        conversation_id: Number(person.id),
+        user_query: String(newMessage)
+      };
+  
+      console.log(payload);
+  
+      const response = await axios.post('http://localhost:8000/tarih/me', payload);
+  
+      console.log('User query sent to the backend successfully.');
+  
+      if (!response.data.assistant) {
+        console.log(response);
+        setError(response.statusText);
+        setLoading(false);
+        return;
+      }
+  
+      // Check if the response contains a ReadableStream
+      if (response.data.assistant.getReader) {
+        const data = response.data.assistant;
+        setIsMessageStreaming(true);
+  
+        const reader = data.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+  
+        let lastMessage = '';
+  
+        while (!done) {
+          const { value, done: doneReading } = await reader.read();
+          done = doneReading;
+          const chunkValue = decoder.decode(value);
+  
+          lastMessage = lastMessage + chunkValue;
+  
+          setMessages([
+            ...newMessages,
+            { role: 'assistant', content: lastMessage },
+          ]);
+        }
+  
+        setIsMessageStreaming(false);
+      } else {
+        // If it's not a ReadableStream, directly update the messages based on the response content
+        const assistantMessage = response.data.assistant;
+        if (assistantMessage) {
+          setMessages([
+            ...newMessages,
+            { role: 'assistant', content: assistantMessage },
+          ]);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      setError('An error occurred during the chat.');
+      setLoading(false);
+      setIsMessageStreaming(false);
     }
-
-    // This data is a ReadableStream
-    const data = response.body
-    if (!data) {
-      return
-    }
-
-    // This data is a ReadableStream
-
-    setIsMessageStreaming(true)
-
-    const reader = data.getReader()
-    const decoder = new TextDecoder()
-    let done = false
-
-    let lastMessage = ''
-
-    while (!done) {
-      const { value, done: doneReading } = await reader.read()
-      done = doneReading
-      const chunkValue = decoder.decode(value)
-
-      lastMessage = lastMessage + chunkValue
-
-      setMessages([
-        ...newMessages,
-        { role: 'assistant', content: lastMessage },
-      ])
-
-      setLoading(false)
-    }
-
-    setIsMessageStreaming(false)
-  }
+  };
 
   return {
     messages,
@@ -192,15 +201,27 @@ const useMessages = () => {
     loading,
     error,
     sendMessage,
-  }
-}
+    setMessages,
+    setLoading,
+  };
+};
 
-export default function Chat() {
-  const [input, setInput] = useState('')
+let defaultPerson = { id: 1, name: 'Қасым Хан', image: '/person_image/kasym_khan.jpg' };
+export default function Chat({ session }) {
+  const [input, setInput] = useState('');
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
-  const { messages, isMessageStreaming, loading, error, sendMessage } = useMessages()
+  const { messages, isMessageStreaming, loading, error, sendMessage, setMessages, setLoading } = useMessages();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [person, setPerson] = useState(defaultPerson);
+  const [selectedPerson, setSelectedPerson] = useState(defaultPerson);
+
+  const handlePersonClick = (person) => {
+    setSelectedPerson(person);
+    sendPersonToBackend(person, setLoading);
+  };
+
 
   const handleScroll = () => {
     if (chatContainerRef.current) {
@@ -218,46 +239,309 @@ export default function Chat() {
 
   const scrollDown = useCallback(() => {
     if (autoScrollEnabled) {
-      messagesEndRef.current?.scrollIntoView(true)
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
-  }, [autoScrollEnabled])
+  }, [autoScrollEnabled]);
   const throttledScrollDown = throttle(scrollDown, 250);
 
   useEffect(() => {
-    throttledScrollDown()
+    throttledScrollDown();
   }, [messages, throttledScrollDown]);
 
   useEffect(() => {
     if (error) {
-      toast.error(error)
+      toast.error(error);
     }
-  }, [error])
+  }, [error]);
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed((prevState) => !prevState);
+  };
+
+  const sendPersonToBackend = (person, setLoading) => {
+    // Check if session and person objects are defined and have required properties
+    if (!session || !session.user || !session.user.email) {
+      console.error('Invalid session object or missing user email.');
+      return;
+    }
+  
+    if (!person || !person.id || !person.name) {
+      console.error('Invalid person object or missing id or name.');
+      return;
+    }
+  
+    // Send session and selected person to the backend
+    const data = {
+      user_id: String(session.user.email),
+      conversation_id: Number(person.id),
+      tulga: String(person.name),
+    };
+  
+    axios
+      .post('http://localhost:8000/tarih/personality/me', data)
+      .then(async (response) => {
+        // Handle successful response from the server
+        console.log('Person sent to the backend successfully.');
+        console.log(response);
+  
+        // Fetch chat history after sending the person to the backend
+        const payload = {
+          user_id: String(session.user.email),
+          conversation_id: Number(person.id),
+        };
+        console.log(payload)
+        const historyResponse = await axios.post('http://localhost:8000/tarih/me_get_conversation', payload);
+        console.log(historyResponse)
+        // Ensure the historyResponse.data is an array of message objects
+        if (!Array.isArray(historyResponse.data)) {
+          console.error('Invalid response format. Expected an array of message objects.');
+          return;
+        }
+  
+        // Set the messages state with the fetched chat history
+        setMessages([...initialMessages, ...historyResponse.data]);
+      })
+      .catch((error) => {
+        // Handle error sending data to the server
+        console.error('Error sending person to the backend:', error);
+      });
+    setPerson(person);
+  };
+  
+  const handleTrashClick = (person) => {
+    const payload = {
+      user_id: String(session.user.email),
+      conversation_id: Number(person.id)
+    }
+    console.log(payload)
+    axios
+      .post('http://localhost:8000/tarih/me_delete_conversation_tulga', payload)
+      .then(async (response) => {
+        setMessages([...initialMessages])
+        console.log(response)
+      })
+      .catch((error) => {
+        console.error('Error removing the person from the backend:', error);
+
+      });
+  };
+
+  const ClearChatButton = ({ session, clearChat }) => {
+    const handleClearChat = () => {
+      clearChat(session);
+    };
+    
+  
+    return (
+      <button
+        className="fixed bottom-4 left-4 bg-gray-200 rounded-full p-2 focus:outline-none transition-all duration-300 hover:bg-gray-300"
+        onClick={handleClearChat}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-6 w-6 text-gray-600"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    );
+  };
+
+  const clearChat = (session) => {
+    // Check if session object is defined and has the required properties
+    if (!session || !session.user || !session.user.email) {
+      console.error('Invalid session object or missing user email.');
+      return;
+    }
+  
+    // Clear the messages and reset to initial messages
+    setMessages([...initialMessages]);
+  
+    // Send the clear chat request to the backend
+    const payload = {
+      user_id: String(session.user.email),
+    };
+  
+    axios
+      .post('http://localhost:8000/tarih/me_delete_conversation_full', payload)
+      .then((response) => {
+        console.log('Chat cleared successfully.');
+        console.log(response);
+      })
+      .catch((error) => {
+        console.error('Error clearing the chat:', error);
+      });
+  };
+  
+
+  const Sidebar = ({ selectedPerson, handlePersonClick, handleTrashClick }) => {
+  
+    const persons = [
+      { id: 1, name: 'Қасым Хан', image: '/person_image/kasym_khan.jpg' },
+      { id: 2, name: 'Хақназар Хан', image: '/person_image/haqnazar_khan.jpg' },
+      { id: 3, name: 'Есім Хан', image: '/person_image/esim_khan.jpg' },
+      { id: 4, name: 'Салқам Жәнгір Хан', image: '/person_image/zhangir_khan.jpg' },
+      { id: 5, name: 'Абылай Хан', image: '/person_image/abylay_khan.jpg' },
+      { id: 6, name: 'Төле Би', image: '/person_image/tole_bi.jpg' },
+      { id: 7, name: 'Қазыбек Би', image: '/person_image/kazybek_bi.jpg' },
+      { id: 8, name: 'Әйтеке Би', image: '/person_image/aiteke_bi.jpg' },
+      { id: 9, name: 'Шоқан Уәлиханов', image: '/person_image/shoqan.jpg' },
+    ];
+
+  
+    return (
+      <div className={`w-64 border-r bg-gray-100 flex-none ${sidebarCollapsed ? 'border-r-2 w-16' : ''}`}>
+        <div className="grid grid-cols-1 gap-3 mb-3 max-h-[calc(100vh-64px)] overflow-y-auto scrollbar-w-2 scrollbar-track-gray-100 scrollbar-thumb-gray-300 scrollbar-thumb-rounded-full scrollbar-thumb-hover:scrollbar-thumb-gray-500">
+          {persons.map((person) => (
+            <div
+              key={person.id}
+              className={`flex items-center p-2 border ${
+                selectedPerson.id === person.id ? 'border-gray-900 selected' : 'border-gray-300'
+              } cursor-pointer`}
+              onClick={() => handlePersonClick(person)}
+            >
+              {sidebarCollapsed ? (
+                <img
+                  src={person.image}
+                  alt={person.name}
+                  className="w-16 h-16 rounded-full object-cover mx-2 my-1"
+                />
+              ) : (
+                <>
+                  <img
+                    src={person.image}
+                    alt={person.name}
+                    className="w-16 h-16 rounded-full object-cover mx-2 my-1"
+                  />
+                  <span className={`ml-2 flex-grow ${selectedPerson.id === person.id ? 'text-gray-900' : ''}`}>
+                    {person.name}
+                  </span>
+                </>
+              )}
+              {/* Trash button */}
+              {selectedPerson.id === person.id && !sidebarCollapsed && (
+                <button
+                  className="text-gray-500 hover:text-gray-900 ml-2 focus:outline-none"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleTrashClick(person, setLoading);
+                  }}
+                >
+                  <img
+                    src="trash.png" // Replace "/path/to/your/png/image.png" with the actual path to your PNG image file
+                    alt="Clear Chat" // You can set an appropriate alt text for accessibility
+                    className="h-5 w-5" // Adjust the class or inline styles for the desired size if necessary
+                  />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+  
+  
+  
 
   return (
-    <div className="flex-1 w-full border-zinc-100 bg-white overflow-hidden">
+    <div className="flex-1 w-full border-zinc-100 bg-white overflow-hidden flex">
+      {/* Collapsible Sidebar */}
+      <div
+        className={`transition-all duration-300 ${sidebarCollapsed ? 'w-0' : 'w-64'}`}
+        style={{ flex: sidebarCollapsed ? '0 0 6rem' : '0 0 16rem' }}
+      >
+        {/* Sidebar content */}
+        <div className={`h-full overflow-y-auto ${sidebarCollapsed ? '' : ''}`}>
+          <div className="px-4 py-2 bg-gray-100 flex items-center justify-between">
+            <h2 className="text-xl font-medium">Tulga</h2>
+            <button
+              className="text-gray-500 hover:text-gray-900 focus:outline-none"
+              onClick={toggleSidebar}
+            >
+              {sidebarCollapsed ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              )}
+            </button>
+          </div>
+          <div className="flex-none w-64 overflow-y-auto scrollbar-w-2 scrollbar-track-gray-100 scrollbar-thumb-gray-300 scrollbar-thumb-rounded-full scrollbar-thumb-hover:scrollbar-thumb-gray-500">
+            {/* Pass selectedPerson, handlePersonClick, and handleTrashClick as props */}
+            <Sidebar
+              selectedPerson={selectedPerson}
+              handlePersonClick={handlePersonClick}
+              handleTrashClick={handleTrashClick}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Chat container */}
       <div
         ref={chatContainerRef}
         className="flex-1 w-full relative max-h-[calc(100vh-4rem)] overflow-x-hidden"
         onScroll={handleScroll}
       >
+        {/* Chat lines */}
         {messages.map(({ content, role }, index) => (
           <ChatLine key={index} role={role} content={content} isStreaming={index === messages.length - 1 && isMessageStreaming} />
         ))}
-
-        {loading && <LoadingChatLine />}
-
-        <div
-          className="h-[152px] bg-white"
-          ref={messagesEndRef}
-        />
+        {loading && <LoadingChatLine />} {/* Show loading indicator when loading is true */}
+        <div className="h-[152px] bg-white" ref={messagesEndRef} />
         <InputMessage
           input={input}
           setInput={setInput}
           sendMessage={sendMessage}
-          isLoading={loading || isMessageStreaming}
+          loading={loading || isMessageStreaming}
+          session={session}
+          person={person}
         />
       </div>
+      {/* Sidebar toggle button */}
+      {!sidebarCollapsed && (
+        <button
+          className={`fixed bottom-4 right-4 bg-gray-200 rounded-full p-2 focus:outline-none transition-all duration-300 ${
+            sidebarCollapsed ? 'transform rotate-180' : ''
+          }`}
+          onClick={toggleSidebar}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 text-gray-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            {sidebarCollapsed ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            )}
+          </svg>
+        </button>
+      )}
+      <ClearChatButton session={session} clearChat={clearChat} />
       <Toaster />
     </div>
-  )
+  );
 }

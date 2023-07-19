@@ -22,13 +22,13 @@ export default function NavBar({ session }) {
         <div className="mx-5 flex h-16 max-w-screen-xl items-center justify-between xl:mx-auto">
           <Link href="/" className="flex items-center font-display text-2xl">
             <Image
-              src="/n17r.png"
+              src="/person_image/Logo-tramway-tram-768x768.png"
               alt="N17R logo"
               width="30"
               height="30"
               className="mr-2 rounded-sm"
             ></Image>
-            <p>My First Project</p>
+            <p>TarihShy AI</p>
           </Link>
           <div>
             {session ? (

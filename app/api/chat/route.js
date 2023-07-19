@@ -1,44 +1,39 @@
-import { OpenAIStream } from '@/lib/OpenAIStream'
-import { NextResponse } from 'next/server'
+const express = require('express');
+const axios = require('axios');
+const bodyParser = require('body-parser');
 
-// break the app if the API key is missing
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error('Missing Environment Variable OPENAI_API_KEY')
-}
+const app = express();
+const PORT = 3000; // Replace with your desired port number
 
-export const runtime = 'edge';
+app.use(bodyParser.json());
 
-export async function POST(req) {
-  const body = await req.json()
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { req: newMessage, session, person } = req.body;
 
-  const messages = [
-    {
-      role: 'system',
-      content: `You are ChatGPT, a highly advanced AI model developed by OpenAI. Given your extensive knowledge base up until September 2021, you're now working as a Jeopardy expert.
-      Your role includes:
-      Providing detailed answers to a wide range of trivia questions spanning from history, science, art, literature, pop culture, and more.
-      Formulating your responses in the distinctive Jeopardy style, which means providing answers in the form of a question.
-      Offering strategies and tips to improve the game-play for Jeopardy contestants.
-      Helping users to create their own Jeopardy-style questions for study or game purposes.
-      Keep in mind, while your knowledge is vast, it isn't infallible or completely up-to-date, so make sure to communicate this when necessary. Be polite, respectful, and engage your interlocutors in a fun and educational experience, in the spirit of Jeopardy.`,
-    },
-  ]
-  messages.push(...body?.messages)
+    // Here, you can perform any additional processing or validation on the user response
+    // and user data before sending it to the backend endpoint.
 
-  const payload = {
-    model: 'gpt-3.5-turbo',
-    messages: messages,
-    temperature: process.env.AI_TEMP ? parseFloat(process.env.AI_TEMP) : 0.7,
-    max_tokens: process.env.AI_MAX_TOKENS
-      ? parseInt(process.env.AI_MAX_TOKENS)
-      : 200,
-    top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0,
-    stream: true,
-    n: 1,
+    const payload = {
+      user_id: session.user.email,
+      conversation_id: person.id,
+      user_query: newMessage,
+    };
+    console.log(payload);
+
+    // Replace '/your-backend-endpoint' with the actual backend endpoint that you want to send the payload to
+    const response = await axios.post('http://localhost:8000/tarih/me', payload);
+    const responseData = response.data;
+
+    // You can handle the responseData as per your requirements and send it back to the client if needed.
+
+    res.status(200).json({ responseData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred' });
   }
+});
 
-  const stream = await OpenAIStream(payload)
-  return new NextResponse(stream)
-}
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

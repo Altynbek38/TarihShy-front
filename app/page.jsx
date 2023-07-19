@@ -8,7 +8,7 @@ export default async function Home() {
 
   return (
     session !== null ? (
-      <Chat />
+      <Chat session={session}/>
     ) : (
       <Landing />
     )
