@@ -117,7 +117,7 @@ const InputMessage = ({ input, setInput, sendMessage, loading, session, person }
 }
 
 const useMessages = () => {
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState([] );
   const [isMessageStreaming, setIsMessageStreaming] = useState(false);
   const [loading, setLoading] = useState(false); // Add loading state
   const [error, setError] = useState(null);
@@ -187,6 +187,7 @@ const useMessages = () => {
           ]);
         }
       }
+      setLoading(false);
     } catch (error) {
       console.error(error);
       setError('An error occurred during the chat.');
@@ -219,9 +220,8 @@ export default function Chat({ session }) {
 
   const handlePersonClick = (person) => {
     setSelectedPerson(person);
-    sendPersonToBackend(person, setLoading);
+    sendPersonToBackend(person);
   };
-
 
   const handleScroll = () => {
     if (chatContainerRef.current) {
@@ -258,8 +258,9 @@ export default function Chat({ session }) {
     setSidebarCollapsed((prevState) => !prevState);
   };
 
-  const sendPersonToBackend = (person, setLoading) => {
+  const sendPersonToBackend = (person) => {
     // Check if session and person objects are defined and have required properties
+    setMessages([])
     if (!session || !session.user || !session.user.email) {
       console.error('Invalid session object or missing user email.');
       return;
@@ -307,7 +308,6 @@ export default function Chat({ session }) {
       });
     setPerson(person);
   };
-  
   const handleTrashClick = (person) => {
     const payload = {
       user_id: String(session.user.email),
@@ -334,7 +334,7 @@ export default function Chat({ session }) {
   
     return (
       <button
-        className="fixed bottom-4 left-4 bg-gray-200 rounded-full p-2 focus:outline-none transition-all duration-300 hover:bg-gray-300"
+        className="fixed bottom-12 left-80 bg-gray-200 rounded-full p-2 focus:outline-none transition-all duration-300 hover:bg-gray-300"
         onClick={handleClearChat}
       >
         <svg
@@ -375,10 +375,21 @@ export default function Chat({ session }) {
         console.error('Error clearing the chat:', error);
       });
   };
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Check if the component is mounted
+    setMounted(true);
+
+    // If the component is mounted and it's the first time, send the default person
+    if (mounted) {
+      handlePersonClick(defaultPerson);
+    }
+  }, [mounted]);
   
 
   const Sidebar = ({ selectedPerson, handlePersonClick, handleTrashClick }) => {
-  
     const persons = [
       { id: 1, name: 'Қасым Хан', image: '/person_image/kasym_khan.jpg' },
       { id: 2, name: 'Хақназар Хан', image: '/person_image/haqnazar_khan.jpg' },
@@ -394,7 +405,7 @@ export default function Chat({ session }) {
   
     return (
       <div className={`w-64 border-r bg-gray-100 flex-none ${sidebarCollapsed ? 'border-r-2 w-16' : ''}`}>
-        <div className="grid grid-cols-1 gap-3 mb-3 max-h-[calc(100vh-64px)] overflow-y-auto scrollbar-w-2 scrollbar-track-gray-100 scrollbar-thumb-gray-300 scrollbar-thumb-rounded-full scrollbar-thumb-hover:scrollbar-thumb-gray-500">
+        <div className="grid grid-cols-1 gap-0 mb-3 max-h-[calc(100vh-64px)] overflow-y-auto scrollbar-w-2 scrollbar-track-gray-100 scrollbar-thumb-gray-300 scrollbar-thumb-rounded-full scrollbar-thumb-hover:scrollbar-thumb-gray-500">
           {persons.map((person) => (
             <div
               key={person.id}
@@ -427,13 +438,13 @@ export default function Chat({ session }) {
                   className="text-gray-500 hover:text-gray-900 ml-2 focus:outline-none"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleTrashClick(person, setLoading);
+                    handleTrashClick(person);
                   }}
                 >
                   <img
-                    src="trash.png" // Replace "/path/to/your/png/image.png" with the actual path to your PNG image file
-                    alt="Clear Chat" // You can set an appropriate alt text for accessibility
-                    className="h-5 w-5" // Adjust the class or inline styles for the desired size if necessary
+                    src="trash.png" 
+                    alt="Clear Chat" 
+                    className="h-5 w-5" 
                   />
                 </button>
               )}
@@ -445,19 +456,19 @@ export default function Chat({ session }) {
   };
   
   
-  
-
   return (
     <div className="flex-1 w-full border-zinc-100 bg-white overflow-hidden flex">
       {/* Collapsible Sidebar */}
       <div
         className={`transition-all duration-300 ${sidebarCollapsed ? 'w-0' : 'w-64'}`}
-        style={{ flex: sidebarCollapsed ? '0 0 6rem' : '0 0 16rem' }}
+        style={{ flex: sidebarCollapsed ? '0 0 6rem' : '0 0 16rem', zIndex: 2 }} // Set z-index for the sidebar
       >
         {/* Sidebar content */}
         <div className={`h-full overflow-y-auto ${sidebarCollapsed ? '' : ''}`}>
           <div className="px-4 py-2 bg-gray-100 flex items-center justify-between">
             <h2 className="text-xl font-medium">Tulga</h2>
+            {/* Move the ClearChatButton inside the sidebar */}
+            <ClearChatButton session={session} clearChat={clearChat} />
             <button
               className="text-gray-500 hover:text-gray-900 focus:outline-none"
               onClick={toggleSidebar}
@@ -504,7 +515,7 @@ export default function Chat({ session }) {
       >
         {/* Chat lines */}
         {messages.map(({ content, role }, index) => (
-          <ChatLine key={index} role={role} content={content} isStreaming={index === messages.length - 1 && isMessageStreaming} />
+          <ChatLine key={index} role={role} content={content} isStreaming={index === messages.length - 1 && isMessageStreaming} session={session} selectedPerson={selectedPerson}/>
         ))}
         {loading && <LoadingChatLine />} {/* Show loading indicator when loading is true */}
         <div className="h-[152px] bg-white" ref={messagesEndRef} />
