@@ -1,6 +1,6 @@
+import { useState } from 'react'
 import { CommandLineIcon, UserIcon } from '@heroicons/react/24/outline'
 import axios from 'axios'
-import { useState } from 'react'
 
 // loading placeholder animation for the chat line
 export const LoadingChatLine = () => (
