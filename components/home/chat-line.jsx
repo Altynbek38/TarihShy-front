@@ -24,12 +24,12 @@ const convertNewLines = (text) =>
   ));
 
 export function ChatLine({ role = 'assistant', content, isStreaming, session, selectedPerson, handleAudioButtonClick }) {
+  const [isButtonActive, setIsButtonActive] = useState(true);
   if (!content) {
     return null;
   }
   const contentWithCursor = `${content}${isStreaming ? '▍' : ''}`;
   const formatteMessage = convertNewLines(contentWithCursor);
-  const [isButtonActive, setIsButtonActive] = useState(true);
 
   return (
     <div

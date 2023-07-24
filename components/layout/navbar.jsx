@@ -8,7 +8,7 @@ import UserDropdown from "./user-dropdown";
 
 export default function NavBar({ session }) {
   const { SignInModal, setShowSignInModal } = useSignInModal();
-  const scrolled = session ? useScroll(50) : false   // Only apply the useScroll hook if there's an active session
+  const scrolled = useScroll(50)   // Only apply the useScroll hook if there's an active session
 
   return (
     <>
