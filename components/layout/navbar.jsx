@@ -8,16 +8,17 @@ import UserDropdown from "./user-dropdown";
 
 export default function NavBar({ session }) {
   const { SignInModal, setShowSignInModal } = useSignInModal();
-  const scrolled = useScroll(50);
+  const scrolled = session ? useScroll(50) : false   // Only apply the useScroll hook if there's an active session
 
   return (
     <>
       <SignInModal />
       <div
-        className={`fixed top-0 w-full ${scrolled
-          ? "border-b border-gray-200 bg-white/50 backdrop-blur-xl"
-          : "bg-white/0"
-          } z-30 transition-all`}
+        className={`fixed ${session ? "top-0" : "top-0"} w-full ${
+          scrolled
+            ? "border-b border-gray-200 bg-white/50 backdrop-blur-xl"
+            : "bg-white/0"
+        } z-30 transition-all`}
       >
         <div className="mx-5 flex h-16 max-w-screen-xl items-center justify-between xl:mx-auto">
           <Link href="/" className="flex items-center font-display text-2xl">
@@ -47,3 +48,4 @@ export default function NavBar({ session }) {
     </>
   );
 }
+

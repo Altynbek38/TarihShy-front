@@ -388,6 +388,53 @@ export default function Chat({ session }) {
     }
   }, [mounted]);
   
+  const [audioElement, setAudioElement] = useState(null);
+  const audioRef = useRef(null);
+
+  const handleAudioButtonClick = async (content) => {
+    try {
+      const payload = {
+        user_id: String(session.user.email),
+        conversation_id: Number(selectedPerson.id),
+        query: String(content)
+      };
+  
+      const response = await axios.post('http://localhost:8000/tarih/text_to_speech', payload);
+  
+      if (!response.data) {
+        console.error('Empty response received from the server');
+        return;
+      }
+  
+      const newAudio = new Audio(response.data);
+  
+      if (audioRef.current && audioRef.current.src!== newAudio.src) {
+        
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        console.log('Paused the previous audio.');
+      }
+      console.log(audioRef.current)
+      console.log(newAudio)
+      if (audioRef.current && audioRef.current.src === newAudio.src) {
+        if (audioRef.current.paused) {
+          audioRef.current.play();
+          console.log('Resumed the current audio.');
+        } else {
+          audioRef.current.pause();
+          console.log('Paused the current audio.');
+        }
+      } else {
+        newAudio.play();
+        console.log('Started playing new audio.');
+        setAudioElement(newAudio);
+        audioRef.current = newAudio;
+      }
+    } catch (error) {
+      console.error('Error while fetching or playing audio:', error);
+    }
+  };
+  
 
   const Sidebar = ({ selectedPerson, handlePersonClick, handleTrashClick }) => {
     const persons = [
@@ -515,7 +562,7 @@ export default function Chat({ session }) {
       >
         {/* Chat lines */}
         {messages.map(({ content, role }, index) => (
-          <ChatLine key={index} role={role} content={content} isStreaming={index === messages.length - 1 && isMessageStreaming} session={session} selectedPerson={selectedPerson}/>
+          <ChatLine key={index} role={role} content={content} isStreaming={index === messages.length - 1 && isMessageStreaming} session={session} selectedPerson={selectedPerson} handleAudioButtonClick={handleAudioButtonClick}/>
         ))}
         {loading && <LoadingChatLine />} {/* Show loading indicator when loading is true */}
         <div className="h-[152px] bg-white" ref={messagesEndRef} />
