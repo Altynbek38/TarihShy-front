@@ -141,7 +141,7 @@ const useMessages = () => {
   
       console.log(payload);
   
-      const response = await axios.post('http://localhost:8000/tarih/me', payload);
+      const response = await axios.post('https://tarihshyback-production.up.railway.app/tarih/me', payload);
   
       console.log('User query sent to the backend successfully.');
   
@@ -279,7 +279,7 @@ export default function Chat({ session }) {
     };
   
     axios
-      .post('http://localhost:8000/tarih/personality/me', data)
+      .post('https://tarihshyback-production.up.railway.app/tarih/personality/me', data)
       .then(async (response) => {
         // Handle successful response from the server
         console.log('Person sent to the backend successfully.');
@@ -291,7 +291,7 @@ export default function Chat({ session }) {
           conversation_id: Number(person.id),
         };
         console.log(payload)
-        const historyResponse = await axios.post('http://localhost:8000/tarih/me_get_conversation', payload);
+        const historyResponse = await axios.post('https://tarihshyback-production.up.railway.app/tarih/me_get_conversation', payload);
         console.log(historyResponse)
         // Ensure the historyResponse.data is an array of message objects
         if (!Array.isArray(historyResponse.data)) {
@@ -315,7 +315,7 @@ export default function Chat({ session }) {
     }
     console.log(payload)
     axios
-      .post('http://localhost:8000/tarih/me_delete_conversation_tulga', payload)
+      .post('https://tarihshyback-production.up.railway.app/tarih/me_delete_conversation_tulga', payload)
       .then(async (response) => {
         setMessages([...initialMessages])
         console.log(response)
@@ -366,7 +366,7 @@ export default function Chat({ session }) {
     };
   
     axios
-      .post('http://localhost:8000/tarih/me_delete_conversation_full', payload)
+      .post('https://tarihshyback-production.up.railway.app/tarih/me_delete_conversation_full', payload)
       .then((response) => {
         console.log('Chat cleared successfully.');
         console.log(response);
@@ -399,7 +399,7 @@ export default function Chat({ session }) {
         query: String(content)
       };
   
-      const response = await axios.post('http://localhost:8000/tarih/text_to_speech', payload);
+      const response = await axios.post('https://tarihshyback-production.up.railway.app/tarih/text_to_speech', payload);
   
       if (!response.data) {
         console.error('Empty response received from the server');
@@ -451,7 +451,7 @@ export default function Chat({ session }) {
 
   
     return (
-      <div className={`w-64 border-r bg-gray-100 flex-none ${sidebarCollapsed ? 'border-r-2 w-16' : ''}`}>
+      <div className={`w-64 border-r bg-gray-100 flex-none ${sidebarCollapsed ? 'border-r-2 w-16' : ''}`} style={{ height: '100vh' }}>
         <div className="grid grid-cols-1 gap-0 mb-3 max-h-[calc(100vh-64px)] overflow-y-auto scrollbar-w-2 scrollbar-track-gray-100 scrollbar-thumb-gray-300 scrollbar-thumb-rounded-full scrollbar-thumb-hover:scrollbar-thumb-gray-500">
           {persons.map((person) => (
             <div
@@ -503,13 +503,16 @@ export default function Chat({ session }) {
   };
   
   
+  
   return (
-    <div className="flex-1 w-full border-zinc-100 bg-white overflow-hidden flex">
+    <div className="flex-1 w-full border-zinc-100 bg-white overflow-hidden flex" >
       {/* Collapsible Sidebar */}
       <div
-        className={`transition-all duration-300 ${sidebarCollapsed ? 'w-0' : 'w-64'}`}
-        style={{ flex: sidebarCollapsed ? '0 0 6rem' : '0 0 16rem', zIndex: 2 }} // Set z-index for the sidebar
-      >
+  className={`transition-all duration-300 ${
+    sidebarCollapsed ? 'w-0' : 'w-64'
+  } overflow-hidden`} // Add 'overflow-hidden' to prevent scrolling
+  style={{ flex: sidebarCollapsed ? '0 0 6rem' : '0 0 16rem', zIndex: 2 }}
+>
         {/* Sidebar content */}
         <div className={`h-full overflow-y-auto ${sidebarCollapsed ? '' : ''}`}>
           <div className="px-4 py-2 bg-gray-100 flex items-center justify-between">
@@ -556,10 +559,10 @@ export default function Chat({ session }) {
 
       {/* Chat container */}
       <div
-        ref={chatContainerRef}
-        className="flex-1 w-full relative max-h-[calc(100vh-4rem)] overflow-x-hidden"
-        onScroll={handleScroll}
-      >
+  ref={chatContainerRef}
+  className="flex-1 w-full relative max-h-[calc(100vh-4rem)] overflow-y-auto" // Set 'overflow-y-auto' to enable scrolling
+  onScroll={handleScroll}
+>
         {/* Chat lines */}
         {messages.map(({ content, role }, index) => (
           <ChatLine key={index} role={role} content={content} isStreaming={index === messages.length - 1 && isMessageStreaming} session={session} selectedPerson={selectedPerson} handleAudioButtonClick={handleAudioButtonClick}/>
