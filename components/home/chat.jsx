@@ -458,7 +458,8 @@ export default function Chat({ session }) {
             <div
               key={person.id}
               className={`flex items-center p-2 border ${selectedPerson.id === person.id ? 'border-gray-900 selected' : 'border-gray-300'
-                } cursor-pointer`}
+                } cursor-pointer ${person.id === 1 ? 'md:mt-0 mt-8' : ''
+                }`}
               onClick={() => handlePersonClick(person)}
             >
               {sidebarCollapsed ? (
@@ -506,15 +507,35 @@ export default function Chat({ session }) {
   return (
     <div className="flex-1 w-full border-zinc-100 bg-white overflow-hidden flex " >
       {/* Collapsible Sidebar */}
-      <button 
-        className="block md:hidden absolute top-50px z-10 left-2 bg-gray-700 rounded-md text-white px-1 h-6"
+      <button
+        className="block md:hidden absolute top-50px z-10 left-2  h-8 text-gray-500 hover:text-gray-900 focus:outline-none"
         onClick={toggleSidebar}
       >
-        Tulga
+        {sidebarCollapsed ? (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        ) : (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        )}
       </button>
       <div
         className={`transition-all duration-300 ${sidebarCollapsed ? 'w-0 md:w-24' : 'w-64'
-          } overflow-hidden `} // Add 'overflow-hidden' to prevent scrolling
+          } overflow-hidden`} // Add 'overflow-hidden' to prevent scrolling
       >
         {/* Sidebar content */}
         <div className={`h-full overflow-y-auto`}>
