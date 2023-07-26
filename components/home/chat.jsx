@@ -14,7 +14,7 @@ import toast, { Toaster } from 'react-hot-toast'
 export const initialMessages = [
   {
     role: 'assistant',
-    content: 'Salem! Men sizge tarih joninde kez kelgen suraqqa jauap beremin',
+    content: 'Ассалаумағалейкум! Мен сізге тарих жөнінде кез келген сұраққа jauap beremin',
   },
 ]
 
@@ -81,7 +81,8 @@ const InputMessage = ({ input, setInput, sendMessage, loading, session, person }
             className="m-0 w-full border-0 bg-transparent p-0 py-3 pl-4 pr-12 text-black"
             placeholder="Type a message..."
             value={input}
-            onKeyDown={(e) => {             if (e.key === 'Enter') {
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
                 sendMessage(input, session, person)
                 setInput('')
               }
@@ -117,7 +118,7 @@ const InputMessage = ({ input, setInput, sendMessage, loading, session, person }
 }
 
 const useMessages = () => {
-  const [messages, setMessages] = useState([] );
+  const [messages, setMessages] = useState([]);
   const [isMessageStreaming, setIsMessageStreaming] = useState(false);
   const [loading, setLoading] = useState(false); // Add loading state
   const [error, setError] = useState(null);
@@ -131,51 +132,51 @@ const useMessages = () => {
       { role: 'user', content: newMessage },
     ];
     setMessages(newMessages);
-  
+
     try {
       const payload = {
-        user_id: String(session.user.email), 
+        user_id: String(session.user.email),
         conversation_id: Number(person.id),
         user_query: String(newMessage)
       };
-  
+
       console.log(payload);
-  
+
       const response = await axios.post('https://tarihshyback-production.up.railway.app/tarih/me', payload);
-  
+
       console.log('User query sent to the backend successfully.');
-  
+
       if (!response.data.assistant) {
         console.log(response);
         setError(response.statusText);
         setLoading(false);
         return;
       }
-  
+
       // Check if the response contains a ReadableStream
       if (response.data.assistant.getReader) {
         const data = response.data.assistant;
         setIsMessageStreaming(true);
-  
+
         const reader = data.getReader();
         const decoder = new TextDecoder();
         let done = false;
-  
+
         let lastMessage = '';
-  
+
         while (!done) {
           const { value, done: doneReading } = await reader.read();
           done = doneReading;
           const chunkValue = decoder.decode(value);
-  
+
           lastMessage = lastMessage + chunkValue;
-  
+
           setMessages([
             ...newMessages,
             { role: 'assistant', content: lastMessage },
           ]);
         }
-  
+
         setIsMessageStreaming(false);
       } else {
         // If it's not a ReadableStream, directly update the messages based on the response content
@@ -265,26 +266,26 @@ export default function Chat({ session }) {
       console.error('Invalid session object or missing user email.');
       return;
     }
-  
+
     if (!person || !person.id || !person.name) {
       console.error('Invalid person object or missing id or name.');
       return;
     }
-  
+
     // Send session and selected person to the backend
     const data = {
       user_id: String(session.user.email),
       conversation_id: Number(person.id),
       tulga: String(person.name),
     };
-  
+
     axios
       .post('https://tarihshyback-production.up.railway.app/tarih/personality/me', data)
       .then(async (response) => {
         // Handle successful response from the server
         console.log('Person sent to the backend successfully.');
         console.log(response);
-  
+
         // Fetch chat history after sending the person to the backend
         const payload = {
           user_id: String(session.user.email),
@@ -298,7 +299,7 @@ export default function Chat({ session }) {
           console.error('Invalid response format. Expected an array of message objects.');
           return;
         }
-  
+
         // Set the messages state with the fetched chat history
         setMessages([...initialMessages, ...historyResponse.data]);
       })
@@ -330,8 +331,8 @@ export default function Chat({ session }) {
     const handleClearChat = () => {
       clearChat(session);
     };
-    
-  
+
+
     return (
       <button
         className="fixed bottom-12 left-80 bg-gray-200 rounded-full p-2 focus:outline-none transition-all duration-300 hover:bg-gray-300"
@@ -356,15 +357,15 @@ export default function Chat({ session }) {
       console.error('Invalid session object or missing user email.');
       return;
     }
-  
+
     // Clear the messages and reset to initial messages
     setMessages([...initialMessages]);
-  
+
     // Send the clear chat request to the backend
     const payload = {
       user_id: String(session.user.email),
     };
-  
+
     axios
       .post('https://tarihshyback-production.up.railway.app/tarih/me_delete_conversation_full', payload)
       .then((response) => {
@@ -387,7 +388,7 @@ export default function Chat({ session }) {
       handlePersonClick(defaultPerson);
     }
   }, [mounted]);
-  
+
   const [audioElement, setAudioElement] = useState(null);
   const audioRef = useRef(null);
 
@@ -398,18 +399,18 @@ export default function Chat({ session }) {
         conversation_id: Number(selectedPerson.id),
         query: String(content)
       };
-  
+
       const response = await axios.post('https://tarihshyback-production.up.railway.app/tarih/text_to_speech', payload);
-  
+
       if (!response.data) {
         console.error('Empty response received from the server');
         return;
       }
-  
+
       const newAudio = new Audio(response.data);
-  
-      if (audioRef.current && audioRef.current.src!== newAudio.src) {
-        
+
+      if (audioRef.current && audioRef.current.src !== newAudio.src) {
+
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
         console.log('Paused the previous audio.');
@@ -434,7 +435,7 @@ export default function Chat({ session }) {
       console.error('Error while fetching or playing audio:', error);
     }
   };
-  
+
 
   const Sidebar = ({ selectedPerson, handlePersonClick, handleTrashClick }) => {
     const persons = [
@@ -449,16 +450,15 @@ export default function Chat({ session }) {
       { id: 9, name: 'Шоқан Уәлиханов', image: '/person_image/shoqan.jpg' },
     ];
 
-  
+
     return (
       <div className={`w-64 border-r bg-gray-100 flex-none ${sidebarCollapsed ? 'border-r-2 w-16' : ''}`} style={{ height: '100vh' }}>
         <div className="grid grid-cols-1 gap-0 mb-3 max-h-[calc(100vh-64px)] overflow-y-auto scrollbar-w-2 scrollbar-track-gray-100 scrollbar-thumb-gray-300 scrollbar-thumb-rounded-full scrollbar-thumb-hover:scrollbar-thumb-gray-500">
           {persons.map((person) => (
             <div
               key={person.id}
-              className={`flex items-center p-2 border ${
-                selectedPerson.id === person.id ? 'border-gray-900 selected' : 'border-gray-300'
-              } cursor-pointer`}
+              className={`flex items-center p-2 border ${selectedPerson.id === person.id ? 'border-gray-900 selected' : 'border-gray-300'
+                } cursor-pointer`}
               onClick={() => handlePersonClick(person)}
             >
               {sidebarCollapsed ? (
@@ -474,7 +474,7 @@ export default function Chat({ session }) {
                     alt={person.name}
                     className="w-16 h-16 rounded-full object-cover mx-2 my-1"
                   />
-                  <span className={`ml-2 flex-grow ${selectedPerson.id === person.id ? 'text-gray-900' : ''}`}>
+                  <span className={`ml-2 flex-grow  ${selectedPerson.id === person.id ? 'text-gray-900' : ''}`}>
                     {person.name}
                   </span>
                 </>
@@ -489,9 +489,9 @@ export default function Chat({ session }) {
                   }}
                 >
                   <img
-                    src="trash.png" 
-                    alt="Clear Chat" 
-                    className="h-5 w-5" 
+                    src="trash.png"
+                    alt="Clear Chat"
+                    className="h-5 w-5"
                   />
                 </button>
               )}
@@ -501,24 +501,25 @@ export default function Chat({ session }) {
       </div>
     );
   };
-  
-  
-  
+
+
   return (
-    <div className="flex-1 w-full border-zinc-100 bg-white overflow-hidden flex" >
+    <div className="flex-1 w-full border-zinc-100 bg-white overflow-hidden flex " >
       {/* Collapsible Sidebar */}
+      <button 
+        className="block md:hidden absolute top-50px z-10 left-2 bg-gray-700 rounded-md text-white px-1 h-6"
+        onClick={toggleSidebar}
+      >
+        Tulga
+      </button>
       <div
-  className={`transition-all duration-300 ${
-    sidebarCollapsed ? 'w-0' : 'w-64'
-  } overflow-hidden`} // Add 'overflow-hidden' to prevent scrolling
-  style={{ flex: sidebarCollapsed ? '0 0 6rem' : '0 0 16rem', zIndex: 2 }}
->
+        className={`transition-all duration-300 ${sidebarCollapsed ? 'w-0 md:w-24' : 'w-64'
+          } overflow-hidden `} // Add 'overflow-hidden' to prevent scrolling
+      >
         {/* Sidebar content */}
-        <div className={`h-full overflow-y-auto ${sidebarCollapsed ? '' : ''}`}>
-          <div className="px-4 py-2 bg-gray-100 flex items-center justify-between">
+        <div className={`h-full overflow-y-auto`}>
+          <div className="md:flex hidden px-4 py-2 bg-gray-100  items-center justify-between">
             <h2 className="text-xl font-medium">Tulga</h2>
-            {/* Move the ClearChatButton inside the sidebar */}
-            <ClearChatButton session={session} clearChat={clearChat} />
             <button
               className="text-gray-500 hover:text-gray-900 focus:outline-none"
               onClick={toggleSidebar}
@@ -559,13 +560,13 @@ export default function Chat({ session }) {
 
       {/* Chat container */}
       <div
-  ref={chatContainerRef}
-  className="flex-1 w-full relative max-h-[calc(100vh-4rem)] overflow-y-auto" // Set 'overflow-y-auto' to enable scrolling
-  onScroll={handleScroll}
->
+        ref={chatContainerRef}
+        className="flex-1 w-full relative max-h-[calc(100vh-4rem)] overflow-y-auto" // Set 'overflow-y-auto' to enable scrolling
+        onScroll={handleScroll}
+      >
         {/* Chat lines */}
         {messages.map(({ content, role }, index) => (
-          <ChatLine key={index} role={role} content={content} isStreaming={index === messages.length - 1 && isMessageStreaming} session={session} selectedPerson={selectedPerson} handleAudioButtonClick={handleAudioButtonClick}/>
+          <ChatLine key={index} role={role} content={content} isStreaming={index === messages.length - 1 && isMessageStreaming} session={session} selectedPerson={selectedPerson} handleAudioButtonClick={handleAudioButtonClick} />
         ))}
         {loading && <LoadingChatLine />} {/* Show loading indicator when loading is true */}
         <div className="h-[152px] bg-white" ref={messagesEndRef} />
@@ -578,29 +579,6 @@ export default function Chat({ session }) {
           person={person}
         />
       </div>
-      {/* Sidebar toggle button */}
-      {!sidebarCollapsed && (
-        <button
-          className={`fixed bottom-4 right-4 bg-gray-200 rounded-full p-2 focus:outline-none transition-all duration-300 ${
-            sidebarCollapsed ? 'transform rotate-180' : ''
-          }`}
-          onClick={toggleSidebar}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 text-gray-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            {sidebarCollapsed ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            )}
-          </svg>
-        </button>
-      )}
       <ClearChatButton session={session} clearChat={clearChat} />
       <Toaster />
     </div>
