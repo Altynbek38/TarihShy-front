@@ -624,7 +624,7 @@ export default function Chat({ session }) {
             loop
             playsInline
             controls={false}
-            className="w-full h-full rounded-full"
+            className="w-full h-full rounded-full object-cover" 
             onCanPlay={() => {
               console.log("Video can start playing.");
             }}
