@@ -4,7 +4,7 @@ import axios from 'axios'
 
 // loading placeholder animation for the chat line
 export const LoadingChatLine = () => (
-  <div className="border-b border-black/10 bg-gray-50 text-gray-800">
+  <div className="border-b border-black/10 bg-zinc-700 text-white">
     <div className="relative m-auto flex p-4 text-base md:max-w-2xl gap-2 md:gap-6 md:py-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
       <div className="min-w-[30px]">
         <CommandLineIcon />
@@ -35,21 +35,21 @@ export function ChatLine({ role = 'assistant', content, isStreaming, session, se
     <div
       className={
         role === 'assistant'
-          ? "border-b border-black/10 bg-gray-50 text-gray-800"
-          : "border-b border-black/10 bg-white text-gray-800"
+          ? "border-b border-black/10 bg-zinc-700 text-white"
+          : "border-b border-black/10 bg-zinc-600 text-white"
       }
     >
       <div className="relative m-auto flex p-4 text-base md:max-w-2xl gap-2 md:gap-6 md:py-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
         <div className="min-w-[30px]">
           {role === 'assistant' ? <CommandLineIcon /> : <UserIcon />}
         </div>
-        <div className="prose whitespace-pre-wrap flex-1">
+        <div className="prose whitespace-pre-wrap flex-1 text-zinc-200">
           {formatteMessage}
         </div>
         {role === 'assistant' && (
           <button
             onClick={() => handleAudioButtonClick(content)}
-            className={`ml-2 px-4 h-10 rounded-md ${isButtonActive ? "bg-gray-700" : "bg-gray-300 hover:bg-gray-500"} text-white`}
+            className={`ml-2 px-4 h-10 rounded-md duration-200 ${isButtonActive ? "bg-teal-800" : "bg-teal-700 hover:bg-teal-700"} text-white `}
             onMouseEnter={() => setIsButtonActive(false)}
             onMouseLeave={() => setIsButtonActive(true)}
           >

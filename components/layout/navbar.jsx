@@ -24,12 +24,12 @@ export default function NavBar({ session }) {
           <Link href="/" className="flex items-center font-display text-2xl">
             <Image
               src="/logo_main.png"
-              alt="N17R logo"
+              alt="TarihShy logo"
               width="30"
               height="30"
               className="mr-2 rounded-sm"
             ></Image>
-            <p>TarihShy AI</p>
+            <p className="text-zinc-200">TarihShy AI</p>
           </Link>
           <div>
             {session ? (

@@ -26,6 +26,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hot-toast": "^2.4.1",
+    "react-player": "^2.12.0",
     "react-wrap-balancer": "^0.3.0"
   },
   "devDependencies": {

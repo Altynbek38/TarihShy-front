@@ -7,6 +7,7 @@ import { PaperAirplaneIcon } from '@heroicons/react/24/outline'
 import cx from 'classnames'
 import { AcademicCapIcon } from '@heroicons/react/24/outline'
 import axios from 'axios'
+import ReactPlayer from "react-player";
 import toast, { Toaster } from 'react-hot-toast'
 
 
@@ -14,7 +15,7 @@ import toast, { Toaster } from 'react-hot-toast'
 export const initialMessages = [
   {
     role: 'assistant',
-    content: 'Ассалаумағалейкум! Мен сізге тарих жөнінде кез келген сұраққа jauap beremin',
+    content: 'Ассалаумағалейкум! Мен сізге тарих жөнінде кез келген сұраққа жауап беремін.',
   },
 ]
 
@@ -26,26 +27,6 @@ const InputMessage = ({ input, setInput, sendMessage, loading, session, person }
 
   const shouldShowLoadingIcon = loading || isGeneratingQuestion
   const inputActive = input !== '' && !shouldShowLoadingIcon
-
-  const generateJeopardyQuestion = async () => {
-    setIsGeneratingQuestion(true)
-    setQuestionError(null)
-
-    try {
-      const res = await axios.get('/api/question')
-      if (!res.data) {
-        throw new Error('No question was found in the response.')
-      }
-      const question_data = res.data
-
-      setQuestion(question_data)
-      setInput(`The category is "${question_data.category}". ${question_data.question}`)
-    } catch (err) {
-      setQuestionError(err.message)
-    } finally {
-      setIsGeneratingQuestion(false)
-    }
-  }
 
   useEffect(() => {
     const input = inputRef?.current
@@ -62,23 +43,14 @@ const InputMessage = ({ input, setInput, sendMessage, loading, session, person }
   }, [questionError])
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-b from-transparent via-white to-white flex flex-col items-center clear-both">
-      <button
-        className="mx-auto flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white py-2 px-4 text-black text-sm hover:opacity-50 disabled:opacity-25"
-        onClick={generateJeopardyQuestion}
-        disabled={isGeneratingQuestion}
-      >
-        <div className="w-4 h-4">
-          <AcademicCapIcon />
-        </div> {'Generate a Jeopardy question for me'}
-      </button>
+    <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-b from-transparent via-xinc-800 to-zinc-700 flex flex-col items-center clear-both">
       <div className="mx-2 my-4 flex-1 w-full md:mx-4 md:mb-[52px] lg:max-w-2xl xl:max-w-3xl">
-        <div className="relative mx-2 flex-1 flex-col rounded-md border-black/10 bg-white shadow-[0_0_10px_rgba(0,0,0,0.10)] sm:mx-4">
+        <div className="relative mx-2 flex-1 flex-col rounded-md border-black/10 bg-zinc-600 shadow-[0_0_10px_rgba(0,0,0,0.10)] sm:mx-4">
           <input
             ref={inputRef}
             aria-label="chat input"
             required
-            className="m-0 w-full border-0 bg-transparent p-0 py-3 pl-4 pr-12 text-black"
+            className="m-0 w-full border-0 bg-transparent p-0 py-3 pl-4 pr-12 text-white text-white::placeholder"
             placeholder="Type a message..."
             value={input}
             onKeyDown={(e) => {
@@ -95,8 +67,8 @@ const InputMessage = ({ input, setInput, sendMessage, loading, session, person }
           <button
             className={cx(
               shouldShowLoadingIcon && "hover:bg-inherit hover:text-inhert",
-              inputActive && "bg-black hover:bg-neutral-800 hover:text-neutral-100",
-              "absolute right-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 transition-colors")}
+              inputActive && "bg-black hover:bg-neutral-200 hover:text-neutral-100",
+              "absolute right-2 top-2 rounded-sm p-1 text-zinc-200 opacity-60 hover:bg-neutral-200 hover:text-zinc-300 transition-colors")}
             type="submit"
             onClick={() => {
               sendMessage(input, session, person)
@@ -208,7 +180,7 @@ const useMessages = () => {
   };
 };
 
-let defaultPerson = { id: 1, name: 'Қасым Хан', image: '/person_image/kasym_khan.jpg' };
+let defaultPerson = { id: 1, name: 'Қасым Хан', image: '/person_image/kasym_khan_br.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/kasym_khan.mp4' };
 export default function Chat({ session }) {
   const [input, setInput] = useState('');
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
@@ -332,21 +304,22 @@ export default function Chat({ session }) {
       clearChat(session);
     };
 
-
     return (
       <button
-        className="fixed bottom-12 left-80 bg-gray-200 rounded-full p-2 focus:outline-none transition-all duration-300 hover:bg-gray-300"
+        className="fixed 2 left-40 text-zinc-200 bg-teal-800 rounded-full p-2 focus:outline-none transition-all duration-200 hover:bg-teal-700"
         onClick={handleClearChat}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 text-gray-600"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
+        <img
+          src="refresh_btn_zinc.png"
+          alt="Clear Chat"
+          className="h-4 w-4"
+          onMouseEnter={(e) => {
+            e.target.src = "refresh_btn_white.png";
+          }}
+          onMouseLeave={(e) => {
+            e.target.src = "refresh_btn_zinc.png";
+          }}
+        />
       </button>
     );
   };
@@ -389,8 +362,14 @@ export default function Chat({ session }) {
     }
   }, [mounted]);
 
+
   const [audioElement, setAudioElement] = useState(null);
   const audioRef = useRef(null);
+  const [videoUrl, setVideoUrl] = useState(selectedPerson.video); // Update the videoUrl state
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [showVideoSurface, setShowVideoSurface] = useState(false);
+
+
 
   const handleAudioButtonClick = async (content) => {
     try {
@@ -410,27 +389,48 @@ export default function Chat({ session }) {
       const newAudio = new Audio(response.data);
 
       if (audioRef.current && audioRef.current.src !== newAudio.src) {
-
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
-        console.log('Paused the previous audio.');
+        setIsAudioPlaying(false); // Pause the floating video when audio is paused
       }
-      console.log(audioRef.current)
-      console.log(newAudio)
+
       if (audioRef.current && audioRef.current.src === newAudio.src) {
         if (audioRef.current.paused) {
           audioRef.current.play();
-          console.log('Resumed the current audio.');
+          setIsAudioPlaying(true);
+          // Trigger video playback when audio is played
+          setShowVideoSurface(true);
         } else {
           audioRef.current.pause();
-          console.log('Paused the current audio.');
+          setIsAudioPlaying(false);
+          // Pause the video when audio is paused
+          setShowVideoSurface(false);
         }
       } else {
         newAudio.play();
-        console.log('Started playing new audio.');
+        setIsAudioPlaying(true);
+        // Set the videoUrl and trigger video playback when audio is played
+        setVideoUrl(selectedPerson.video);
+        setShowVideoSurface(true);
         setAudioElement(newAudio);
         audioRef.current = newAudio;
+
+        // Add event listeners for the 'play' and 'pause' events of the audio element
+        newAudio.addEventListener('play', () => {
+          setIsAudioPlaying(true);
+        });
+
+        newAudio.addEventListener('pause', () => {
+          setIsAudioPlaying(false);
+        });
+
+        newAudio.addEventListener('ended', () => {
+          setShowVideoSurface(false);
+        });
+
       }
+
+
     } catch (error) {
       console.error('Error while fetching or playing audio:', error);
     }
@@ -439,25 +439,25 @@ export default function Chat({ session }) {
 
   const Sidebar = ({ selectedPerson, handlePersonClick, handleTrashClick }) => {
     const persons = [
-      { id: 1, name: 'Қасым Хан', image: '/person_image/kasym_khan.jpg' },
-      { id: 2, name: 'Хақназар Хан', image: '/person_image/haqnazar_khan.jpg' },
-      { id: 3, name: 'Есім Хан', image: '/person_image/esim_khan.jpg' },
-      { id: 4, name: 'Салқам Жәнгір Хан', image: '/person_image/zhangir_khan.jpg' },
-      { id: 5, name: 'Абылай Хан', image: '/person_image/abylay_khan.jpg' },
-      { id: 6, name: 'Төле Би', image: '/person_image/tole_bi.jpg' },
-      { id: 7, name: 'Қазыбек Би', image: '/person_image/kazybek_bi.jpg' },
-      { id: 8, name: 'Әйтеке Би', image: '/person_image/aiteke_bi.jpg' },
-      { id: 9, name: 'Шоқан Уәлиханов', image: '/person_image/shoqan.jpg' },
+      { id: 1, name: 'Қасым Хан', image: '/person_image/kasym_khan_br.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/kasym_khan.mp4' },
+      { id: 2, name: 'Хақназар Хан', image: '/person_image/haqnazar_khan.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/haqnazar_khan.mp4' },
+      { id: 3, name: 'Есім Хан', image: '/person_image/esim_khan_new.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/esim_khan.mp4' },
+      { id: 4, name: 'Салқам Жәнгір Хан', image: '/person_image/zhangir_khan.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/zhangir_khan.mp4' },
+      { id: 5, name: 'Абылай Хан', image: '/person_image/abylay_khan.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/abylay_khan.mp4' },
+      { id: 6, name: 'Төле Би', image: '/person_image/tole_bi.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/tole_bi.mp4' },
+      { id: 7, name: 'Қазыбек Би', image: '/person_image/kazybek_bi_hd.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/kazybek_bi.mp4' },
+      { id: 8, name: 'Әйтеке Би', image: '/person_image/aiteke_bi_hd.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/aiteke_bi.mp4' },
+      { id: 9, name: 'Шоқан Уәлиханов', image: '/person_image/shoqan.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/shoqan.mp4' },
     ];
 
 
     return (
-      <div className={`w-64 border-r bg-gray-100 flex-none ${sidebarCollapsed ? 'border-r-2 w-16' : ''}`} style={{ height: '100vh' }}>
-        <div className="grid grid-cols-1 gap-0 mb-3 max-h-[calc(100vh-64px)] overflow-y-auto scrollbar-w-2 scrollbar-track-gray-100 scrollbar-thumb-gray-300 scrollbar-thumb-rounded-full scrollbar-thumb-hover:scrollbar-thumb-gray-500">
+      <div className={`w-64 border-r bg-zinc-800 flex-none ${sidebarCollapsed ? 'border-r-2 w-16' : ''}`} style={{ height: '100vh' }}>
+        <div className="grid grid-cols-1 gap-0 mb-3 max-h-[calc(100vh-64px)] overflow-y-auto scrollbar-w-2 scrollbar-track-gray-100 scrollbar-thumb-neutral-800 scrollbar-thumb-rounded-full scrollbar-thumb-hover:scrollbar-thumb-gray-500">
           {persons.map((person) => (
             <div
               key={person.id}
-              className={`flex items-center p-2 border ${selectedPerson.id === person.id ? 'border-gray-900 selected' : 'border-gray-300'
+              className={`flex items-center p-2  text-zinc-200 border duration-100  ${selectedPerson.id === person.id ? 'border-neutral-900 selected bg-zinc-900' : 'border-neutral-800 bg-zinc-800 hover:bg-zinc-700'
                 } cursor-pointer ${person.id === 1 ? 'md:mt-0 mt-8' : ''
                 }`}
               onClick={() => handlePersonClick(person)}
@@ -475,7 +475,7 @@ export default function Chat({ session }) {
                     alt={person.name}
                     className="w-16 h-16 rounded-full object-cover mx-2 my-1"
                   />
-                  <span className={`ml-2 flex-grow  ${selectedPerson.id === person.id ? 'text-gray-900' : ''}`}>
+                  <span className={`ml-2 flex-grow `}>
                     {person.name}
                   </span>
                 </>
@@ -483,16 +483,22 @@ export default function Chat({ session }) {
               {/* Trash button */}
               {selectedPerson.id === person.id && !sidebarCollapsed && (
                 <button
-                  className="text-gray-500 hover:text-gray-900 ml-2 focus:outline-none"
+                  className="text-gray-500 hover:text-gray-900 mx-2 focus:outline-none"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleTrashClick(person);
                   }}
                 >
                   <img
-                    src="trash.png"
+                    src="refresh_btn_zinc.png"
                     alt="Clear Chat"
-                    className="h-5 w-5"
+                    className="h-5 w-15"
+                    onMouseEnter={(e) => {
+                      e.target.src = "refresh_btn_white.png";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.src = "refresh_btn_zinc_300.png";
+                    }}
                   />
                 </button>
               )}
@@ -505,10 +511,10 @@ export default function Chat({ session }) {
 
 
   return (
-    <div className="flex-1 w-full border-zinc-100 bg-white overflow-hidden flex " >
+    <div className="flex-1 w-full border-zinc-100 bg-zinc-700 overflow-hidden flex">
       {/* Collapsible Sidebar */}
       <button
-        className="block md:hidden absolute top-50px z-10 left-2  h-8 text-gray-500 hover:text-gray-900 focus:outline-none"
+        className="block md:hidden absolute  w-8 top-50px z-10 ml-2 h-8 text-zinc-300 hover:text-white focus:outline-none"
         onClick={toggleSidebar}
       >
         {sidebarCollapsed ? (
@@ -539,10 +545,10 @@ export default function Chat({ session }) {
       >
         {/* Sidebar content */}
         <div className={`h-full overflow-y-auto`}>
-          <div className="md:flex hidden px-4 py-2 bg-gray-100  items-center justify-between">
+          <div className="md:flex hidden px-4 py-2 bg-neutral-800 text-white items-center justify-between">
             <h2 className="text-xl font-medium">Tulga</h2>
             <button
-              className="text-gray-500 hover:text-gray-900 focus:outline-none"
+              className="text-zinc-300 hover:text-white focus:outline-none"
               onClick={toggleSidebar}
             >
               {sidebarCollapsed ? (
@@ -582,7 +588,7 @@ export default function Chat({ session }) {
       {/* Chat container */}
       <div
         ref={chatContainerRef}
-        className="flex-1 w-full relative max-h-[calc(100vh-4rem)] overflow-y-auto" // Set 'overflow-y-auto' to enable scrolling
+        className="flex-1 w-full relative max-h-[calc(100vh-4rem)] overflow-y-auto"
         onScroll={handleScroll}
       >
         {/* Chat lines */}
@@ -590,7 +596,7 @@ export default function Chat({ session }) {
           <ChatLine key={index} role={role} content={content} isStreaming={index === messages.length - 1 && isMessageStreaming} session={session} selectedPerson={selectedPerson} handleAudioButtonClick={handleAudioButtonClick} />
         ))}
         {loading && <LoadingChatLine />} {/* Show loading indicator when loading is true */}
-        <div className="h-[152px] bg-white" ref={messagesEndRef} />
+        <div className="h-[152px] bg-zinc-700" ref={messagesEndRef} />
         <InputMessage
           input={input}
           setInput={setInput}
@@ -598,9 +604,53 @@ export default function Chat({ session }) {
           loading={loading || isMessageStreaming}
           session={session}
           person={person}
+          className={`${sidebarCollapsed ? "" : "ml:0 md:ml-24"}`}
         />
       </div>
-      <ClearChatButton session={session} clearChat={clearChat} />
+      {/* Video Surface */}
+      <div className="fixed bottom-16 border border-8 border-teal-800 rounded-full right-8 md:w-64 w-32 md:h-96 h-32 bg-black">
+        {/* Video Poster */}
+        <img
+          src={selectedPerson.image}
+          alt="Video Poster"
+          className={`w-full h-full rounded-full object-cover ${showVideoSurface ? 'hidden' : 'block'}`}
+        />
+        {/* Video Element */}
+        {showVideoSurface && (
+          <video
+            poster={selectedPerson.image}
+            autoPlay
+            muted
+            loop
+            playsInline
+            controls={false}
+            className="w-full h-full rounded-full"
+            onCanPlay={() => {
+              console.log("Video can start playing.");
+            }}
+            onPlay={() => {
+              console.log("Video is playing.");
+            }}
+            onPause={() => {
+              console.log("Video is paused.");
+            }}
+            onError={(e) => {
+              console.error("Video error:", e);
+            }}
+            ref={(videoElement) => {
+              if (videoElement) {
+                if (isAudioPlaying) {
+                  videoElement.play();
+                } else {
+                  videoElement.pause();
+                }
+              }
+            }}
+          >
+            <source src={selectedPerson.video} type="video/mp4" />
+          </video>
+        )}
+      </div>
       <Toaster />
     </div>
   );
