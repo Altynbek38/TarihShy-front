@@ -608,7 +608,7 @@ export default function Chat({ session }) {
         />
       </div>
       {/* Video Surface */}
-      <div className="fixed bottom-16 border border-8 border-teal-800 rounded-full right-8 md:w-64 w-32 md:h-96 h-32 bg-black">
+      <div className="fixed bottom-16 md:right-8 right-4  border md:border-8 border-4 border-teal-800 rounded-full md:w-64 w-32 md:h-96 h-32 bg-black">
         {/* Video Poster */}
         <img
           src={selectedPerson.image}
