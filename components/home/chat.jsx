@@ -496,7 +496,7 @@ export default function Chat({ session }) {
         query: String(content)
       };
   
-      const response = await axios.post('http://localhost:8000/tarih/add_favorites', payload);
+      const response = await axios.post('https://tarihshyback-production.up.railway.app/tarih/add_favorites', payload);
       
       if (!response.data) {
         console.error('Empty response received from the server');
@@ -518,7 +518,7 @@ export default function Chat({ session }) {
         user_id: String(session.user.email),
         conversation_id: Number(person.id)
       };
-      const response = await axios.post('http://localhost:8000/tarih/get_favorites', payload);
+      const response = await axios.post('https://tarihshyback-production.up.railway.app/tarih/get_favorites', payload);
       console.log(response.data)
       if (response.data.length !== 0){
         setMessages([...response.data]);

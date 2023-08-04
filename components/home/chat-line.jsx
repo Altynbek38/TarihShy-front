@@ -27,12 +27,13 @@ export function ChatLine({ role = 'assistant', content, isStreaming, session, se
   const [isButtonActive, setIsButtonActive] = useState(true);
   const [isFavoriteActive, setFavoriteActive] = useState(false)
   const [isAudioPlayingIn, setIsAudioPlayingIn] = useState(false)
-  if (!content) {
-    return null;
-  }
   const contentWithCursor = `${content}${isStreaming ? '▍' : ''}`;
   const formatteMessage = convertNewLines(contentWithCursor);
   const [isFavoriteButtonActive, setFavoriteButtonActive] = useState(isFavorite === "True");
+  if (!content) {
+    return null;
+  }
+
 
   const handleFavoriteButton = (content) => {
     if (isFavoriteButtonActive){
