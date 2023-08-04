@@ -19,7 +19,14 @@ export const initialMessages = [
   },
 ]
 
-const InputMessage = ({ input, setInput, sendMessage, loading, session, person }) => {
+export const emptyMessages = [
+  {
+    role: 'assistant',
+    content: 'Cіздің таңдауылы хабарламаңыз жоқ.',
+  },
+]
+
+const InputMessage = ({ input, setInput, sendMessage, loading, session, person, handleTrashClick, sidebarCollapsed, handleFavoritesClick, isFavoriteButtonActive}) => {
   const [isGeneratingQuestion, setIsGeneratingQuestion] = useState(false)
   const [question, setQuestion] = useState(null)
   const [questionError, setQuestionError] = useState(null)
@@ -42,8 +49,51 @@ const InputMessage = ({ input, setInput, sendMessage, loading, session, person }
     }
   }, [questionError])
 
+  let text = ""
+
+  if (person.name === "Шоқан Уәлиханов") {
+    text = `${person.name}пен чатты тазалау`
+  }
+  else {
+    text = `${person.name}мен чатты тазалау`
+  }
+
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-b from-transparent via-xinc-800 to-zinc-700 flex flex-col items-center clear-both">
+    <div className="flex items-center gap-3">
+      <button
+        className={`${sidebarCollapsed ? "" : "hidden md:flex"} mx-auto flex w-fit items-center gap-3 rounded text-white bg-teal-800 py-2 px-4 text-black text-sm hover:bg-teal-700 disabled:opacity-25`}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleTrashClick(person);
+        }}
+      >
+        <img
+          src="refresh_btn_zinc.png"
+          alt="Clear Chat"
+          className="h-5 w-15"
+          onMouseEnter={(e) => {
+            e.target.src = "refresh_btn_white.png";
+          }}
+          onMouseLeave={(e) => {
+            e.target.src = "refresh_btn_zinc_300.png";
+          }}
+        />
+        {text}
+      </button>
+
+      <button
+        className={`${sidebarCollapsed ? "" : "hidden md:flex"} mx-auto flex w-32 items-center rounded text-white bg-teal-800 py-1 px-4 text-black text-sm hover:bg-teal-700 disabled:opacity-25`}
+        onClick={() => handleFavoritesClick(person)}
+      >
+        <img
+          src="favorite_false_white.png"
+          alt="Clear Chat"
+          className="h-7 w-15 mr-1"
+        />
+        <span className="">{isFavoriteButtonActive  ?"Қайту" : "Таңдаулы"}</span>
+      </button>
+    </div>
       <div className="mx-2 my-4 flex-1 w-full md:mx-4 md:mb-[52px] lg:max-w-2xl xl:max-w-3xl">
         <div className="relative mx-2 flex-1 flex-col rounded-md border-black/10 bg-zinc-600 shadow-[0_0_10px_rgba(0,0,0,0.10)] sm:mx-4">
           <input
@@ -51,7 +101,7 @@ const InputMessage = ({ input, setInput, sendMessage, loading, session, person }
             aria-label="chat input"
             required
             className="m-0 w-full border-0 bg-transparent p-0 py-3 pl-4 pr-12 text-white text-white::placeholder"
-            placeholder="Type a message..."
+            placeholder="Сіздің сұрағыңыз..."
             value={input}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -437,6 +487,62 @@ export default function Chat({ session }) {
   };
 
 
+  const [isFavoriteButtonActive, setFavoriteButtonActive] = useState(false)
+  const handleFavorite = async (content) => {
+    try {
+      const payload = {
+        user_id: String(session.user.email),
+        conversation_id: Number(selectedPerson.id),
+        query: String(content)
+      };
+  
+      const response = await axios.post('http://localhost:8000/tarih/add_favorites', payload);
+      
+      if (!response.data) {
+        console.error('Empty response received from the server');
+        return;
+      }
+  
+      console.log(response)
+  
+    } catch (error) {
+      console.error('Error while adding message to favorites', error);
+    }
+  }
+  
+
+  const showFavorites = async (person)=> {
+    try {
+      setMessages([])
+      const payload = {
+        user_id: String(session.user.email),
+        conversation_id: Number(person.id)
+      };
+      const response = await axios.post('http://localhost:8000/tarih/get_favorites', payload);
+      console.log(response.data)
+      if (response.data.length !== 0){
+        setMessages([...response.data]);
+      }
+      else {
+        setMessages([...emptyMessages])
+      }
+      
+    }catch (error) {
+      console.error('Error while getting message to favorites', error);
+    }
+  }
+
+  const handleFavoritesClick = () => {
+    if (isFavoriteButtonActive){
+      setFavoriteButtonActive(false)
+      handlePersonClick(selectedPerson);
+    }
+    else{
+      setFavoriteButtonActive(true);
+      showFavorites(selectedPerson);
+    }
+  };
+
   const Sidebar = ({ selectedPerson, handlePersonClick, handleTrashClick }) => {
     const persons = [
       { id: 1, name: 'Қасым Хан', image: '/person_image/kasym_khan_br.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/kasym_khan.mp4' },
@@ -475,32 +581,10 @@ export default function Chat({ session }) {
                     alt={person.name}
                     className="w-16 h-16 rounded-full object-cover mx-2 my-1"
                   />
-                  <span className={`ml-2 flex-grow `}>
+                  <span className={`ml-2 flex-grow`}>
                     {person.name}
                   </span>
                 </>
-              )}
-              {/* Trash button */}
-              {selectedPerson.id === person.id && !sidebarCollapsed && (
-                <button
-                  className="text-gray-500 hover:text-gray-900 mx-2 focus:outline-none"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleTrashClick(person);
-                  }}
-                >
-                  <img
-                    src="refresh_btn_zinc.png"
-                    alt="Clear Chat"
-                    className="h-5 w-15"
-                    onMouseEnter={(e) => {
-                      e.target.src = "refresh_btn_white.png";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.src = "refresh_btn_zinc_300.png";
-                    }}
-                  />
-                </button>
               )}
             </div>
           ))}
@@ -592,8 +676,8 @@ export default function Chat({ session }) {
         onScroll={handleScroll}
       >
         {/* Chat lines */}
-        {messages.map(({ content, role }, index) => (
-          <ChatLine key={index} role={role} content={content} isStreaming={index === messages.length - 1 && isMessageStreaming} session={session} selectedPerson={selectedPerson} handleAudioButtonClick={handleAudioButtonClick} />
+        {messages.map(({ content, role, is_favorite}, index) => (
+          <ChatLine key={index} role={role} content={content} isStreaming={index === messages.length - 1 && isMessageStreaming} session={session} selectedPerson={selectedPerson} handleAudioButtonClick={handleAudioButtonClick} isAudioPlaying={isAudioPlaying} handleFavorite={handleFavorite} isFavorite={is_favorite} />
         ))}
         {loading && <LoadingChatLine />} {/* Show loading indicator when loading is true */}
         <div className="h-[152px] bg-zinc-700" ref={messagesEndRef} />
@@ -604,11 +688,16 @@ export default function Chat({ session }) {
           loading={loading || isMessageStreaming}
           session={session}
           person={person}
+          handleTrashClick={handleTrashClick}
+          sidebarCollapsed={sidebarCollapsed}
+          handleFavoritesClick={handleFavoritesClick}
+          isFavoriteButtonActive={isFavoriteButtonActive}
           className={`${sidebarCollapsed ? "" : "ml:0 md:ml-24"}`}
         />
+
       </div>
       {/* Video Surface */}
-      <div className="fixed bottom-16 md:right-8 right-4  border md:border-8 border-4 border-teal-800 rounded-full md:w-64 w-32 md:h-96 h-32 bg-black">
+      <div className="fixed bottom-28 md:bottom-16 md:right-8 right-4  border md:border-8 border-4 border-teal-800 rounded-full md:w-64 w-32 md:h-96 h-32 bg-black">
         {/* Video Poster */}
         <img
           src={selectedPerson.image}
@@ -624,7 +713,7 @@ export default function Chat({ session }) {
             loop
             playsInline
             controls={false}
-            className="w-full h-full rounded-full object-cover" 
+            className="w-full h-full rounded-full object-cover"
             onCanPlay={() => {
               console.log("Video can start playing.");
             }}

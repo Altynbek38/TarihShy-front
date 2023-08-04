@@ -45,9 +45,9 @@ const SignInModal = ({
               <Dialog.Panel className="w-full overflow-hidden shadow-xl md:max-w-md md:rounded-2xl md:border md:border-gray-200 transition-all">
                 <div className="flex flex-col items-center justify-center space-y-3 border-b border-gray-200 bg-white px-4 py-6 pt-8 text-center md:px-16">
                   <Image
-                    src="/person_image/Logo-tramway-tram-768x768.png"
+                    src="/logo_main.png"
                     alt="Logo"
-                    className="h-10 w-10 rounded-full"
+                    className="h-10 w-10 rounded"
                     width={20}
                     height={20}
                   />
@@ -70,7 +70,7 @@ const SignInModal = ({
                       <LoadingDots color="#808080" />
                     ) : (
                       <>
-                        <Google className="h-5 w-5" />
+                        <img src="/google.png" className="h-5 w-5" />
                         <p>Sign In with Google</p>
                       </>
                     )}

@@ -5,6 +5,10 @@ import cx from "classnames";
 import { sfPro, inter } from "./fonts";
 import Nav from "@/components/layout/nav";
 import { Suspense } from "react";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/authOptions";
+
+
 
 export const metadata = {
   title: "TarihShy AI",
@@ -36,7 +40,10 @@ window.addEventListener('resize', setViewportProperty(document.documentElement))
 
 export default async function RootLayout({
   children,
-}) {
+})
+
+{
+  const session = await getServerSession(authOptions);
   return (
     <html lang="en">
       <Script id="safari-viewport-fix">{IOS_SAFARI_VIEWPORT_UNIT_CORRECTION}</Script>
@@ -45,7 +52,7 @@ export default async function RootLayout({
         <Suspense fallback="...">
           <Nav />
         </Suspense>
-        <main className="flex min-h-screen w-full flex-col items-center justify-center pt-16 relative">
+        <main className={`flex min-h-screen w-full flex-col items-center justify-center ${session ? "pt-16" : ""} relative`}>
           {children}
         </main>
         <Analytics />

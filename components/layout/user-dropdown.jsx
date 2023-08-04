@@ -17,7 +17,7 @@ export default function UserDropdown({ session }) {
     <div className="relative inline-block text-left">
       <Menu as="div" className="relative ml-3">
         <div>
-          <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+          <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300 focus:ring-offset-2 focus:ring-offset-gray-800">
             <span className="sr-only">Open user menu</span>
             <Image
               alt={email}
@@ -37,11 +37,11 @@ export default function UserDropdown({ session }) {
           leaveFrom="transform opacity-100 scale-100"
           leaveTo="transform opacity-0 scale-95"
         >
-          <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+          <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-zinc-600 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
             <Menu.Item>
               {({ active }) => (
                 <button
-                  className={cx(active ? 'bg-gray-100' : '', 'relative flex w-full items-center justify-start space-x-2 rounded-md p-2 text-sm text-gray-700')}
+                  className={cx(active ? 'bg-zinc-700' : 'bg-zinc-600', 'relative flex w-full items-center justify-start space-x-2 rounded-md p-2 text-sm text-zinc-200')}
                   onClick={() => signOut()}
                 >
                   <ArrowRightOnRectangleIcon className="h-4 w-4" />
