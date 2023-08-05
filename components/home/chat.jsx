@@ -60,9 +60,9 @@ const InputMessage = ({ input, setInput, sendMessage, loading, session, person, 
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-b from-transparent via-xinc-800 to-zinc-700 flex flex-col items-center clear-both">
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2 md:gap-3">
       <button
-        className={`${sidebarCollapsed ? "" : "hidden md:flex"} mx-auto flex w-fit items-center gap-3 rounded text-white bg-teal-800 py-2 px-4 text-black text-sm hover:bg-teal-700 disabled:opacity-25`}
+        className={`${sidebarCollapsed ? "" : "hidden md:flex"} mx-auto flex w-fit items-center gap-3 rounded text-white bg-teal-800 py-2 px-3 text-black text-sm hover:bg-teal-700 disabled:opacity-25`}
         onClick={(e) => {
           e.stopPropagation();
           handleTrashClick(person);
@@ -83,7 +83,7 @@ const InputMessage = ({ input, setInput, sendMessage, loading, session, person, 
       </button>
 
       <button
-        className={`${sidebarCollapsed ? "" : "hidden md:flex"} mx-auto flex w-32 items-center rounded text-white bg-teal-800 py-1 px-4 text-black text-sm hover:bg-teal-700 disabled:opacity-25`}
+        className={`${sidebarCollapsed ? "" : "hidden md:flex"} mx-auto flex w-32 items-center rounded text-white bg-teal-800 py-1 px-3 text-black text-sm hover:bg-teal-700 disabled:opacity-25`}
         onClick={() => handleFavoritesClick(person)}
       >
         <img
