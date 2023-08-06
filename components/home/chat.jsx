@@ -26,7 +26,7 @@ export const emptyMessages = [
   },
 ]
 
-const InputMessage = ({ input, setInput, sendMessage, loading, session, person, handleTrashClick, sidebarCollapsed, handleFavoritesClick, isFavoriteButtonActive}) => {
+const InputMessage = ({ input, setInput, sendMessage, loading, session, person, handleTrashClick, sidebarCollapsed, handleFavoritesClick, isFavoriteButtonActive }) => {
   const [isGeneratingQuestion, setIsGeneratingQuestion] = useState(false)
   const [question, setQuestion] = useState(null)
   const [questionError, setQuestionError] = useState(null)
@@ -60,40 +60,40 @@ const InputMessage = ({ input, setInput, sendMessage, loading, session, person, 
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-b from-transparent via-xinc-800 to-zinc-700 flex flex-col items-center clear-both">
-    <div className="flex items-center gap-2 md:gap-3">
-      <button
-        className={`${sidebarCollapsed ? "" : "hidden md:flex"} mx-auto flex w-fit items-center gap-3 rounded text-white bg-teal-800 py-2 px-3 text-black text-sm hover:bg-teal-700 disabled:opacity-25`}
-        onClick={(e) => {
-          e.stopPropagation();
-          handleTrashClick(person);
-        }}
-      >
-        <img
-          src="refresh_btn_zinc.png"
-          alt="Clear Chat"
-          className="h-5 w-15"
-          onMouseEnter={(e) => {
-            e.target.src = "refresh_btn_white.png";
+      <div className="flex items-center gap-2 md:gap-3">
+        <button
+          className={`${sidebarCollapsed ? "" : "hidden md:flex"} mx-auto flex w-fit items-center gap-3 rounded text-white bg-teal-800 py-2 px-3 text-black text-sm hover:bg-teal-700 disabled:opacity-25`}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleTrashClick(person);
           }}
-          onMouseLeave={(e) => {
-            e.target.src = "refresh_btn_zinc_300.png";
-          }}
-        />
-        {text}
-      </button>
+        >
+          <img
+            src="refresh_btn_zinc.png"
+            alt="Clear Chat"
+            className="h-5 w-15"
+            onMouseEnter={(e) => {
+              e.target.src = "refresh_btn_white.png";
+            }}
+            onMouseLeave={(e) => {
+              e.target.src = "refresh_btn_zinc_300.png";
+            }}
+          />
+          {text}
+        </button>
 
-      <button
-        className={`${sidebarCollapsed ? "" : "hidden md:flex"} mx-auto flex w-32 items-center rounded text-white bg-teal-800 py-1 px-3 text-black text-sm hover:bg-teal-700 disabled:opacity-25`}
-        onClick={() => handleFavoritesClick(person)}
-      >
-        <img
-          src="favorite_false_white.png"
-          alt="Clear Chat"
-          className="h-7 w-15 mr-1"
-        />
-        <span className="">{isFavoriteButtonActive  ?"Қайту" : "Таңдаулы"}</span>
-      </button>
-    </div>
+        <button
+          className={`${sidebarCollapsed ? "" : "hidden md:flex"} mx-auto flex w-32 items-center rounded text-white bg-teal-800 py-1 px-3 text-black text-sm hover:bg-teal-700 disabled:opacity-25`}
+          onClick={() => handleFavoritesClick(person)}
+        >
+          <img
+            src="favorite_false_white.png"
+            alt="Clear Chat"
+            className="h-7 w-15 mr-1"
+          />
+          <span className="">{isFavoriteButtonActive ? "Қайту" : "Таңдаулы"}</span>
+        </button>
+      </div>
       <div className="mx-2 my-4 flex-1 w-full md:mx-4 md:mb-[52px] lg:max-w-2xl xl:max-w-3xl">
         <div className="relative mx-2 flex-1 flex-col rounded-md border-black/10 bg-zinc-600 shadow-[0_0_10px_rgba(0,0,0,0.10)] sm:mx-4">
           <input
@@ -495,23 +495,23 @@ export default function Chat({ session }) {
         conversation_id: Number(selectedPerson.id),
         query: String(content)
       };
-  
+
       const response = await axios.post('https://tarihshyback-production.up.railway.app/tarih/add_favorites', payload);
-      
+
       if (!response.data) {
         console.error('Empty response received from the server');
         return;
       }
-  
+
       console.log(response)
-  
+
     } catch (error) {
       console.error('Error while adding message to favorites', error);
     }
   }
-  
 
-  const showFavorites = async (person)=> {
+
+  const showFavorites = async (person) => {
     try {
       setMessages([])
       const payload = {
@@ -520,24 +520,24 @@ export default function Chat({ session }) {
       };
       const response = await axios.post('https://tarihshyback-production.up.railway.app/tarih/get_favorites', payload);
       console.log(response.data)
-      if (response.data.length !== 0){
+      if (response.data.length !== 0) {
         setMessages([...response.data]);
       }
       else {
         setMessages([...emptyMessages])
       }
-      
-    }catch (error) {
+
+    } catch (error) {
       console.error('Error while getting message to favorites', error);
     }
   }
 
   const handleFavoritesClick = () => {
-    if (isFavoriteButtonActive){
+    if (isFavoriteButtonActive) {
       setFavoriteButtonActive(false)
       handlePersonClick(selectedPerson);
     }
-    else{
+    else {
       setFavoriteButtonActive(true);
       showFavorites(selectedPerson);
     }
@@ -554,6 +554,12 @@ export default function Chat({ session }) {
       { id: 7, name: 'Қазыбек Би', image: '/person_image/kazybek_bi_hd.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/kazybek_bi.mp4' },
       { id: 8, name: 'Әйтеке Би', image: '/person_image/aiteke_bi_hd.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/aiteke_bi.mp4' },
       { id: 9, name: 'Шоқан Уәлиханов', image: '/person_image/shoqan.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/shoqan.mp4' },
+      { id: 10, name: 'Әлихан Бөкейханов', image: '/person_image/bokeikhanov.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/bokeikhanov.mp4' },
+      { id: 11, name: 'Ахмет Байтұрсынұлы', image: '/person_image/baitursynov.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/baitursynov.mp4' },
+      { id: 12, name: 'Мұхамеджан Тынышбаев', image: '/person_image/tynyshpaev.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/tynyshpaev.mp4' },
+      { id: 13, name: 'Мұстафа Шоқай', image: '/person_image/shoqai_new.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/shoqai.mp4' },
+      { id: 14, name: 'Тұрар Рысқұлов', image: '/person_image/rysqulov.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/rysqulov.mp4' },
+      { id: 15, name: 'Дінмұхаммед Қонаев', image: '/person_image/qonaev_new.jpg', video: 'https://storage.googleapis.com/tulga_videos-bucket/qonaev.mp4' },
     ];
 
 
@@ -565,7 +571,8 @@ export default function Chat({ session }) {
               key={person.id}
               className={`flex items-center p-2  text-zinc-200 border duration-100  ${selectedPerson.id === person.id ? 'border-neutral-900 selected bg-zinc-900' : 'border-neutral-800 bg-zinc-800 hover:bg-zinc-700'
                 } cursor-pointer ${person.id === 1 ? 'md:mt-0 mt-8' : ''
-                }`}
+                }
+                ${person.id === 15 ? 'mb-32' :  ''}`}
               onClick={() => handlePersonClick(person)}
             >
               {sidebarCollapsed ? (
@@ -601,7 +608,7 @@ export default function Chat({ session }) {
         className="block md:hidden absolute  w-8 top-50px z-10 ml-2 h-8 text-zinc-300 hover:text-white focus:outline-none"
         onClick={toggleSidebar}
       >
-        {sidebarCollapsed ? (
+        {!sidebarCollapsed ? (
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -609,7 +616,7 @@ export default function Chat({ session }) {
             viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l 7-7-7-7" />
           </svg>
         ) : (
           <svg
@@ -619,7 +626,7 @@ export default function Chat({ session }) {
             viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         )}
       </button>
@@ -629,13 +636,13 @@ export default function Chat({ session }) {
       >
         {/* Sidebar content */}
         <div className={`h-full overflow-y-auto`}>
-          <div className="md:flex hidden px-4 py-2 bg-neutral-800 text-white items-center justify-between">
+          <div className="md:flex hidden px-2 py-2 bg-neutral-800 text-white items-center justify-between">
             <h2 className="text-xl font-medium">Tulga</h2>
             <button
               className="text-zinc-300 hover:text-white focus:outline-none"
               onClick={toggleSidebar}
             >
-              {sidebarCollapsed ? (
+              {!sidebarCollapsed ? (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6"
@@ -643,7 +650,7 @@ export default function Chat({ session }) {
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l 7-7-7-7" />
                 </svg>
               ) : (
                 <svg
@@ -653,7 +660,7 @@ export default function Chat({ session }) {
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               )}
             </button>
@@ -676,7 +683,7 @@ export default function Chat({ session }) {
         onScroll={handleScroll}
       >
         {/* Chat lines */}
-        {messages.map(({ content, role, is_favorite}, index) => (
+        {messages.map(({ content, role, is_favorite }, index) => (
           <ChatLine key={index} role={role} content={content} isStreaming={index === messages.length - 1 && isMessageStreaming} session={session} selectedPerson={selectedPerson} handleAudioButtonClick={handleAudioButtonClick} isAudioPlaying={isAudioPlaying} handleFavorite={handleFavorite} isFavorite={is_favorite} />
         ))}
         {loading && <LoadingChatLine />} {/* Show loading indicator when loading is true */}
