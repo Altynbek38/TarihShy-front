@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { ChatLine, LoadingChatLine } from './chat-line'
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline'
 import cx from 'classnames'
-import { AcademicCapIcon } from '@heroicons/react/24/outline'
+import { AcademicCapIcon } from '@heroicons/react/24/outline' 
 import axios from 'axios'
 import ReactPlayer from "react-player";
 import toast, { Toaster } from 'react-hot-toast'
@@ -51,7 +51,7 @@ const InputMessage = ({ input, setInput, sendMessage, loading, session, person, 
 
   let text = ""
 
-  if (person.name === "Шоқан Уәлиханов") {
+  if (person.name === "Шоқан Уәлиханов" || person.name === "Әлихан Бөкейханов" || person.name === "Мұхамеджан Тынышбаев" || person.name === "Тұрар Рысқұлов" || person.name === "Дінмұхаммед Қонаев") {
     text = `${person.name}пен чатты тазалау`
   }
   else {
@@ -62,7 +62,7 @@ const InputMessage = ({ input, setInput, sendMessage, loading, session, person, 
     <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-b from-transparent via-xinc-800 to-zinc-700 flex flex-col items-center clear-both">
       <div className="flex items-center gap-2 md:gap-3">
         <button
-          className={`${sidebarCollapsed ? "" : "hidden md:flex"} mx-auto flex w-fit items-center gap-3 rounded text-white bg-teal-800 py-2 px-3 text-black text-sm hover:bg-teal-700 disabled:opacity-25`}
+          className={`${sidebarCollapsed ? "" :   "hidden md:flex"} mx-auto flex w-fit items-center gap-3 rounded text-white bg-teal-800 py-2 px-3 text-black text-sm hover:bg-teal-700 disabled:opacity-25`}
           onClick={(e) => {
             e.stopPropagation();
             handleTrashClick(person);
@@ -637,7 +637,7 @@ export default function Chat({ session }) {
         {/* Sidebar content */}
         <div className={`h-full overflow-y-auto`}>
           <div className="md:flex hidden px-2 py-2 bg-neutral-800 text-white items-center justify-between">
-            <h2 className="text-xl font-medium">Tulga</h2>
+            <h2 className="text-xl font-medium">Тұлға</h2>
             <button
               className="text-zinc-300 hover:text-white focus:outline-none"
               onClick={toggleSidebar}

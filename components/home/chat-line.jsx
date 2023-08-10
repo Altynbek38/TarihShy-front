@@ -68,7 +68,7 @@ export function ChatLine({ role = 'assistant', content, isStreaming, session, se
     >
       <div className="relative m-auto flex p-4 text-base sm:max-w-2xl gap-2 sm:gap-6 sm:py-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
         <div className="min-w-[30px]">
-          {role === 'assistant' ? <CommandLineIcon /> : <UserIcon />}
+          {role === 'assistant' ? <img src='/oyu_pn2.png' className='h-8 w-8 rounded-full'></img> : <UserIcon />}
         </div>
         <div className="prose whitespace-pre-wrap flex-1 text-zinc-200">
           {formatteMessage}
@@ -99,6 +99,4 @@ export function ChatLine({ role = 'assistant', content, isStreaming, session, se
       </div>
     </div>
   );
-
 }
-
