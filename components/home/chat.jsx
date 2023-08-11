@@ -605,13 +605,13 @@ export default function Chat({ session }) {
     <div className="flex-1 w-full border-zinc-100 bg-zinc-700 overflow-hidden flex">
       {/* Collapsible Sidebar */}
       <button
-        className="block md:hidden absolute  w-8 top-50px z-10 ml-2 h-8 text-zinc-300 hover:text-white focus:outline-none"
+        className="block md:hidden absolute w-8 top-50px z-10 ml-2 h-8 text-zinc-300 hover:text-white focus:outline-none"
         onClick={toggleSidebar}
       >
         {!sidebarCollapsed ? (
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
+            className="h-7 w-7 pr-2 bg-teal-800 hover:teal-700 rounded "
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -621,7 +621,7 @@ export default function Chat({ session }) {
         ) : (
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
+            className="h-6 w-6 "
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
