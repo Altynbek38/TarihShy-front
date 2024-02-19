@@ -164,7 +164,7 @@ const useMessages = () => {
 
       console.log(payload);
 
-      const response = await axios.post('https://tarihshyback-production.up.railway.app/tarih/me', payload);
+      const response = await axios.post('https://fastapi-49ml.onrender.com/tarih/me', payload);
 
       console.log('User query sent to the backend successfully.');
 
