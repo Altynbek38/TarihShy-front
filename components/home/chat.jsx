@@ -302,7 +302,7 @@ export default function Chat({ session }) {
     };
 
     axios
-      .post('https://fastapi-49ml.onrender.com/personality/me', data)
+      .post('https://fastapi-49ml.onrender.com/tarih/personality/me', data)
       .then(async (response) => {
         // Handle successful response from the server
         console.log('Person sent to the backend successfully.');
@@ -314,7 +314,7 @@ export default function Chat({ session }) {
           conversation_id: Number(person.id),
         };
         console.log(payload)
-        const historyResponse = await axios.post('https://fastapi-49ml.onrender.com/me_get_conversation', payload);
+        const historyResponse = await axios.post('https://fastapi-49ml.onrender.com/tarih/me_get_conversation', payload);
         console.log(historyResponse)
         // Ensure the historyResponse.data is an array of message objects
         if (!Array.isArray(historyResponse.data)) {
@@ -338,7 +338,7 @@ export default function Chat({ session }) {
     }
     console.log(payload)
     axios
-      .post('https://fastapi-49ml.onrender.com/me_delete_conversation_tulga', payload)
+      .post('https://fastapi-49ml.onrender.com/tarih/me_delete_conversation_tulga', payload)
       .then(async (response) => {
         setMessages([...initialMessages])
         console.log(response)
@@ -390,7 +390,7 @@ export default function Chat({ session }) {
     };
 
     axios
-      .post('https://fastapi-49ml.onrender.com/me_delete_conversation_full', payload)
+      .post('https://fastapi-49ml.onrender.com/tarih/me_delete_conversation_full', payload)
       .then((response) => {
         console.log('Chat cleared successfully.');
         console.log(response);
@@ -429,7 +429,7 @@ export default function Chat({ session }) {
         query: String(content)
       };
 
-      const response = await axios.post('https://fastapi-49ml.onrender.com/text_to_speech', payload);
+      const response = await axios.post('https://fastapi-49ml.onrender.com/tarih/text_to_speech', payload);
 
       if (!response.data) {
         console.error('Empty response received from the server');
@@ -496,7 +496,7 @@ export default function Chat({ session }) {
         query: String(content)
       };
 
-      const response = await axios.post('https://fastapi-49ml.onrender.com/add_favorites', payload);
+      const response = await axios.post('https://fastapi-49ml.onrender.com/tarih/add_favorites', payload);
 
       if (!response.data) {
         console.error('Empty response received from the server');
@@ -518,7 +518,7 @@ export default function Chat({ session }) {
         user_id: String(session.user.email),
         conversation_id: Number(person.id)
       };
-      const response = await axios.post('https://fastapi-49ml.onrender.com/get_favorites', payload);
+      const response = await axios.post('https://fastapi-49ml.onrender.com/tarih/get_favorites', payload);
       console.log(response.data)
       if (response.data.length !== 0) {
         setMessages([...response.data]);
